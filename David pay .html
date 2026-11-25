@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>David Pay</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5fb;color:#17233c}
+header{background:#0755c9;color:white;padding:18px 16px;display:flex;justify-content:space-between;align-items:center}
+header h2{margin:0}
+main{max-width:850px;margin:auto;padding:16px}
+.card{background:white;border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 5px 18px #102b5010}
+input,button,select{width:100%;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #d6deeb;font-size:15px}
+button{background:#0755c9;color:white;border:0;font-weight:bold;cursor:pointer}
+button.secondary{background:#e8f0ff;color:#0755c9}
+button.danger{background:#d83232}
+button.small{width:auto;padding:8px 12px}
+.hidden{display:none!important}
+.balance{background:linear-gradient(135deg,#0755c9,#092c76);color:white;border-radius:18px;padding:23px}
+.balance h1{font-size:32px;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:#edf4ff;padding:14px;border-radius:12px}
+.stat strong{font-size:22px;display:block;margin-top:7px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 7px;border-bottom:1px solid #e5eaf2;text-align:left}
+.tablewrap{overflow-x:auto}
+.muted{color:#718096;font-size:13px}
+nav{position:sticky;bottom:0;background:white;display:flex;justify-content:space-around;padding:9px;border-top:1px solid #ddd}
+nav button{font-size:12px;padding:10px 5px;margin:0;background:white;color:#0755c9}
+h3{margin-top:5px}
+.tag{display:inline-block;background:#e5f4e9;color:#18783b;padding:5px 9px;border-radius:20px;font-size:12px}
+.adminhead{background:#10284d}
+.notice{background:#fff5d9;padding:12px;border-radius:10px;font-size:13px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+
+<header>
+  <h2>💳 DAVID PAY</h2>
+  <span id="headerUser">Wallet</span>
+</header>
+
+<main>
+  <!-- AUTH -->
+  <section id="auth">
+    <div class="card">
+      <h2>Welcome to David Pay</h2>
+      <p class="muted">Login to your wallet or create a new account.</p>
+      <div id="loginBox">
+        <h3>Login</h3>
+        <input id="loginPhone" placeholder="Phone number" inputmode="tel">
+        <input id="loginPassword" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <button class="secondary" onclick="showSignup()">Create Account</button>
+        <button class="secondary" onclick="showForgot()">Forgot Password?</button>
+        <button class="secondary" onclick="showAdminLogin()">Admin Login</button>
+      </div>
+
+      <div id="signupBox" class="hidden">
+        <h3>Create Account</h3>
+        <input id="newName" placeholder="Full name">
+        <input id="newPhone" placeholder="Phone number" inputmode="tel">
+        <input id="newEmail" placeholder="Email (optional)">
+        <input id="newAddress" placeholder="Address (optional)">
+        <input id="newPassword" type="password" placeholder="Create password">
+        <input id="newPin" type="password" placeholder="Create 4-digit PIN" maxlength="4">
+        <button onclick="signup()">Register</button>
+        <button class="secondary" onclick="showLogin()">Back to Login</button>
+      </div>
+
+      <div id="forgotBox" class="hidden">
+        <h3>Reset Password</h3>
+        <input id="forgotPhone" placeholder="Registered phone number">
+        <input id="forgotNewPassword" type="password" placeholder="New password">
+        <button onclick="resetPassword()">Reset Password</button>
+        <button class="secondary" onclick="showLogin()">Back</button>
+      </div>
+
+      <div id="adminLoginBox" class="hidden">
+        <h3>🔐 Admin Login</h3>
+        <p class="muted">Private administrator access</p>
+        <input id="adminCode" type="password" placeholder="Admin login code">
+        <button onclick="adminLogin()">Enter Admin Dashboard</button>
+        <button class="secondary" onclick="showLogin()">Back to User Login</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- USER APP -->
+  <section id="app" class="hidden">
+    <div id="homePage">
+      <div class="balance">
+        <div>Available Balance</div>
+        <h1 id="balanceText">0 ETB</h1>
+        <span id="welcomeName">Welcome</span>
+      </div>
+
+      <div class="grid">
+        <button onclick="showAction('Send Money')">📤 Send Money</button>
+        <button onclick="showAction('Deposit')">📥 Deposit</button>
+        <button onclick="showAction('Withdraw')">💵 Withdraw</button>
+        <button onclick="showAction('Buy Airtime')">📱 Buy Airtime</button>
+      </div>
+
+      <div class="card">
+        <h3>Recent Transactions</h3>
+        <div id="recentTransactions" class="muted">No transactions yet.</div>
+      </div>
+    </div>
+
+    <div id="profilePage" class="hidden">
+      <div class="card">
+        <h3>My Profile</h3>
+        <input id="profileName" placeholder="Full name">
+        <input id="profilePhone" disabled>
+        <input id="profileEmail" placeholder="Email">
+        <input id="profileAddress" placeholder="Address">
+        <button onclick="saveProfile()">Save Profile</button>
+      </div>
+      <div class="card">
+        <h3>Security</h3>
+        <input id="changePassword" type="password" placeholder="New password">
+        <button onclick="changePassword()">Change Password</button>
+        <input id="changePin" type="password" maxlength="4" placeholder="New 4-digit PIN">
+        <button onclick="changePin()">Change PIN</button>
+      </div>
+    </div>
+
+    <div id="historyPage" class="hidden">
+      <div class="card">
+        <h3>Transaction History</h3>
+        <div id="historyList"></div>
+      </div>
+    </div>
+
+    <div id="settingsPage" class="hidden">
+      <div class="card">
+        <h3>Settings</h3>
+        <button class="secondary" onclick="toggleDark()">Toggle Dark Mode</button>
+        <button class="secondary" onclick="alert('Notifications are shown inside this demo app.')">Notifications</button>
+        <button class="danger" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div id="actionPage" class="hidden">
+      <div class="card">
+        <h3 id="actionTitle">Transaction</h3>
+        <input id="actionPhone" placeholder="Phone number (if needed)">
+        <input id="actionAmount" type="number" placeholder="Amount in ETB">
+        <input id="actionPin" type="password" maxlength="4" placeholder="Your PIN">
+        <button onclick="completeAction()">Confirm Transaction</button>
+        <button class="secondary" onclick="showPage('home')">Cancel</button>
+      </div>
+    </div>
+
+    <nav>
+      <button onclick="showPage('home')">🏠<br>Home</button>
+      <button onclick="showPage('history')">📜<br>History</button>
+      <button onclick="showPage('profile')">👤<br>Profile</button>
+      <button onclick="showPage('settings')">⚙️<br>Settings</button>
+    </nav>
+  </section>
+
+  <!-- ADMIN -->
+  <section id="adminApp" class="hidden">
+    <header class="adminhead" style="margin:-16px -16px 16px">
+      <h2>🛡️ Admin Dashboard</h2>
+      <button class="small" style="background:#fff;color:#123" onclick="adminLogout()">Logout</button>
+    </header>
+
+    <div class="notice">
+      Admin overview: registered users and transactions stored in this browser.
+    </div>
+
+    <div class="grid">
+      <div class="stat">Total Users<strong id="totalUsers">0</strong></div>
+      <div class="stat">Transactions<strong id="totalTransactions">0</strong></div>
+      <div class="stat">Total Deposits<strong id="totalDeposits">0 ETB</strong></div>
+      <div class="stat">Total Withdrawals<strong id="totalWithdrawals">0 ETB</strong></div>
+    </div>
+
+    <div class="card">
+      <h3>🔔 Admin Notifications</h3>
+      <div id="adminNotifications">No notifications yet.</div>
+    </div>
+
+    <div class="card">
+      <h3>👥 Registered Users</h3>
+      <input id="userSearch" placeholder="Search by name or phone" oninput="renderAdmin()">
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Name</th><th>Phone</th><th>Registered</th><th>Status</th></tr></thead>
+          <tbody id="usersTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💳 All Transactions</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Type</th><th>User</th><th>Amount</th><th>Date</th></tr></thead>
+          <tbody id="transactionsTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const DB_KEY = "david_pay_demo_v1";
+const ADMIN_CODE = "127";
+
+let db = JSON.parse(localStorage.getItem(DB_KEY) || '{"users":[],"accounts":{},"current":null,"transactions":[],"alerts":[]}');
+
+db.users ||= [];
+db.accounts ||= {};
+db.transactions ||= [];
+db.alerts ||= [];
+
+// Add registration dates to older demo accounts
+db.users.forEach(u => {
+  if (!u.registeredAt) u.registeredAt = new Date().toISOString();
+  if (!u.status) u.status = "Active";
+});
+saveDB();
+
+let currentAction = "";
+
+function saveDB(){
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+
+function showBox(id){
+  ["loginBox","signupBox","forgotBox","adminLoginBox"].forEach(x =>
+    document.getElementById(x).classList.add("hidden")
+  );
+  document.getElementById(id).classList.remove("hidden");
+}
+function showLogin(){showBox("loginBox")}
+function showSignup(){showBox("signupBox")}
+function showForgot(){showBox("forgotBox")}
+function showAdminLogin(){showBox("adminLoginBox")}
+
+function signup(){
+  const name = document.getElementById("newName").value.trim();
+  const phone = document.getElementById("newPhone").value.trim();
+  const email = document.getElementById("newEmail").value.trim();
+  const address = document.getElementById("newAddress").value.trim();
+  const password = document.getElementById("newPassword").value;
+  const pin = document.getElementById("newPin").value;
+
+  if(!name || !phone || !password || !pin){
+    alert("Please fill in name, phone, password and PIN.");
+    return;
+  }
+  if(!/^\d{4}$/.test(pin)){
+    alert("PIN must contain exactly 4 digits.");
+    return;
+  }
+  if(db.users.some(u => u.phone === phone)){
+    alert("This phone number is already registered.");
+    return;
+  }
+
+  const user = {
+    name, phone, email, address, password, pin,
+    registeredAt: new Date().toISOString(),
+    status: "Active"
+  };
+
+  db.users.push(user);
+  db.accounts[phone] = {balance:1000};
+  db.alerts.unshift({
+    message:"New user registered: " + name + " (" + phone + ")",
+    date:new Date().toISOString()
+  });
+  saveDB();
+  alert("Account created successfully! Demo starting balance: 1000 ETB.");
+  showLogin();
+}
+
+function login(){
+  const phone = document.getElementById("loginPhone").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const user = db.users.find(u => u.phone === phone && u.password === password);
+
+  if(!user){alert("Incorrect phone number or password.");return;}
+  if(user.status === "Inactive"){alert("This account is inactive.");return;}
+
+  db.current = phone;
+  saveDB();
+  openUserApp();
+}
+
+function resetPassword(){
+  const phone = document.getElementById("forgotPhone").value.trim();
+  const password = document.getElementById("forgotNewPassword").value;
+  const user = db.users.find(u => u.phone === phone);
+  if(!user || !password){alert("Check phone number and new password.");return;}
+  user.password = password;
+  saveDB();
+  alert("Password changed. Please login.");
+  showLogin();
+}
+
+function openUserApp(){
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("adminApp").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  const user = getUser();
+  document.getElementById("headerUser").textContent = user.name;
+  document.getElementById("welcomeName").textContent = "Welcome, " + user.name;
+  loadProfile();
+  updateBalance();
+  renderHistory();
+  showPage("home");
+}
+
+function getUser(){
+  return db.users.find(u => u.phone === db.current);
+}
+function getAccount(){
+  return db.accounts[db.current];
+}
+function updateBalance(){
+  document.getElementById("balanceText").textContent =
+    Number(getAccount().balance).toLocaleString() + " ETB";
+  renderRecent();
+}
+
+function showPage(page){
+  ["homePage","profilePage","historyPage","settingsPage","actionPage"].forEach(id =>
+    document.getElementById(id).classList.add("hidden")
+  );
+  document.getElementById(page+"Page").classList.remove("hidden");
+  if(page === "history") renderHistory();
+}
+
+function showAction(type){
+  currentAction = type;
+  document.getElementById("actionTitle").textContent = type;
+  document.getElementById("actionPhone").value = "";
+  document.getElementById("actionAmount").value = "";
+  document.getElementById("actionPin").value = "";
+  showPage("action");
+}
+
+function completeAction(){
+  const amount = Number(document.getElementById("actionAmount").value);
+  const pin = document.getElementById("actionPin").value;
+  const target = document.getElementById("actionPhone").value.trim();
+  const user = getUser();
+  const account = getAccount();
+
+  if(pin !== user.pin){alert("Incorrect PIN.");return;}
+  if(!amount || amount <= 0){alert("Enter a valid amount.");return;}
+
+  if(currentAction === "Withdraw" || currentAction === "Send Money" || currentAction === "Buy Airtime"){
+    if(account.balance < amount){alert("Insufficient balance.");return;}
+  }
+
+  if(currentAction === "Send Money" && !target){
+    alert("Enter recipient phone number.");return;
+  }
+
+  if(currentAction === "Deposit"){
+    account.balance += amount;
+  } else {
+    account.balance -= amount;
+  }
+
+  const tx = {
+    type:currentAction,
+    phone:user.phone,
+    name:user.name,
+    target:target || "-",
+    amount:amount,
+    date:new Date().toISOString()
+  };
+
+  db.transactions.unshift(tx);
+  db.alerts.unshift({
+    message:currentAction + " transaction: " + user.name + " - " + amount + " ETB",
+    date:tx.date
+  });
+
+  saveDB();
+  updateBalance();
+  renderHistory();
+  alert(currentAction + " demo transaction completed.");
+  showPage("home");
+}
+
+function renderRecent(){
+  const list = db.transactions.filter(t => t.phone === db.current).slice(0,5);
+  document.getElementById("recentTransactions").innerHTML =
+    list.length ? list.map(t =>
+      `<p>${safe(t.type)} — ${Number(t.amount).toLocaleString()} ETB <span class="muted">${formatDate(t.date)}</span></p>`
+    ).join("") : "No transactions yet.";
+}
+
+function renderHistory(){
+  const list = db.transactions.filter(t => t.phone === db.current);
+  document.getElementById("historyList").innerHTML =
+    list.length ? list.map(t =>
+      `<div class="card"><b>${safe(t.type)}</b><p>${Number(t.amount).toLocaleString()} ETB</p><span class="muted">${formatDate(t.date)}</span></div>`
+    ).join("") : "No transactions yet.";
+}
+
+function loadProfile(){
+  const u = getUser();
+  document.getElementById("profileName").value = u.name || "";
+  document.getElementById("profilePhone").value = u.phone || "";
+  document.getElementById("profileEmail").value = u.email || "";
+  document.getElementById("profileAddress").value = u.address || "";
+}
+
+function saveProfile(){
+  const u = getUser();
+  u.name = document.getElementById("profileName").value.trim();
+  u.email = document.getElementById("profileEmail").value.trim();
+  u.address = document.getElementById("profileAddress").value.trim();
+  saveDB();
+  document.getElementById("welcomeName").textContent = "Welcome, " + u.name;
+  alert("Profile updated.");
+}
+
+function changePassword(){
+  const value = document.getElementById("changePassword").value;
+  if(!value){alert("Enter a new password.");return;}
+  getUser().password = value;
+  saveDB();
+  document.getElementById("changePassword").value = "";
+  alert("Password changed.");
+}
+
+function changePin(){
+  const value = document.getElementById("changePin").value;
+  if(!/^\d{4}$/.test(value)){alert("PIN must be 4 digits.");return;}
+  getUser().pin = value;
+  saveDB();
+  document.getElementById("changePin").value = "";
+  alert("PIN changed.");
+}
+
+function toggleDark(){
+  document.body.style.background =
+    document.body.style.background === "rgb(20, 29, 45)" ? "#f1f5fb" : "#141d2d";
+  document.body.style.color =
+    document.body.style.color === "white" ? "#17233c" : "white";
+}
+
+function logout(){
+  db.current = null;
+  saveDB();
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("auth").classList.remove("hidden");
+  showLogin();
+}
+
+function adminLogin(){
+  const code = document.getElementById("adminCode").value;
+  if(code !== ADMIN_CODE){alert("Incorrect Admin Code.");return;}
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("adminApp").classList.remove("hidden");
+  renderAdmin();
+}
+
+function adminLogout(){
+  document.getElementById("adminApp").classList.add("hidden");
+  document.getElementById("auth").classList.remove("hidden");
+  document.getElementById("adminCode").value = "";
+  showLogin();
+}
+
+function renderAdmin(){
+  document.getElementById("totalUsers").textContent = db.users.length;
+  document.getElementById("totalTransactions").textContent = db.transactions.length;
+
+  const deposits = db.transactions.filter(t => t.type === "Deposit")
+    .reduce((sum,t)=>sum+Number(t.amount),0);
+  const withdrawals = db.transactions.filter(t => t.type === "Withdraw")
+    .reduce((sum,t)=>sum+Number(t.amount),0);
+
+  document.getElementById("totalDeposits").textContent = deposits.toLocaleString()+" ETB";
+  document.getElementById("totalWithdrawals").textContent = withdrawals.toLocaleString()+" ETB";
+
+  const search = (document.getElementById("userSearch").value || "").toLowerCase();
+  const users = db.users.filter(u =>
+    u.name.toLowerCase().includes(search) || u.phone.includes(search)
+  );
+
+  document.getElementById("usersTable").innerHTML = users.map(u => `
+    <tr>
+      <td>${safe(u.name)}</td>
+      <td>${safe(u.phone)}</td>
+      <td>${formatDate(u.registeredAt)}</td>
+      <td><span class="tag">${safe(u.status || "Active")}</span></td>
+    </tr>
+  `).join("") || '<tr><td colspan="4">No users found.</td></tr>';
+
+  document.getElementById("transactionsTable").innerHTML =
+    db.transactions.map(t => `
+      <tr>
+        <td>${safe(t.type)}</td>
+        <td>${safe(t.name || t.phone)}</td>
+        <td>${Number(t.amount).toLocaleString()} ETB</td>
+        <td>${formatDate(t.date)}</td>
+      </tr>
+    `).join("") || '<tr><td colspan="4">No transactions yet.</td></tr>';
+
+  document.getElementById("adminNotifications").innerHTML =
+    db.alerts.slice(0,20).map(a =>
+      `<p>🔔 ${safe(a.message)}<br><span class="muted">${formatDate(a.date)}</span></p>`
+    ).join("") || "No notifications yet.";
+}
+
+function formatDate(value){
+  return value ? new Date(value).toLocaleString() : "-";
+}
+function safe(value){
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+showLogin();
+</script>
+</body>
+</html>
